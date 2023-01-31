@@ -1,12 +1,16 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'dart:convert';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:flutter/material.dart';
 import 'package:trackmyvalorant/login/custom_checkbox.dart';
 
 import 'package:trackmyvalorant/home/main_fragment.dart';
 import 'package:trackmyvalorant/login/multiple_login.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+
+import 'package:firebase_database/firebase_database.dart';
 
 import '../network/fungsiku.dart' as fungsi;
 
@@ -22,96 +26,164 @@ class _login extends State<login> {
   TextEditingController passwordController = TextEditingController();
 
   bool isChecked = false;
-  @override
-  Widget build(BuildContext context) {
-    void _fetchData(BuildContext context) async {
-      void message(String Errtitle, String message) {
-        showDialog(
+
+  void message(String Errtitle, String message) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(Errtitle),
+        content: Text(message),
+        actions: <Widget>[
+          Container(
+            child: TextButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+              },
+              child: const Text("okay"),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void checkUpdate(BuildContext context) async {
+    final ref = FirebaseDatabase.instance.ref();
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+
+    final snapshot = await ref.child('Version').get();
+    redirect() async {
+      Uri url = Uri.parse(jsonDecode(jsonEncode(snapshot.value))['Url']);
+
+      var urllaunchable =
+          await canLaunchUrl(url); //canLaunch is from url_launcher package
+      if (urllaunchable) {
+        launchUrl(url,
+            mode: LaunchMode
+                .externalApplication); //launch is from url_launcher package to launch URL
+      }
+    }
+
+    final versionInt =
+        jsonDecode(jsonEncode(snapshot.value))['AppVersion'].split('.');
+    final vvvv = packageInfo.version.split('.');
+    if (int.parse(versionInt[0]) > int.parse(vvvv[0])) {
+      // ignore: use_build_context_synchronously
+      return showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text("Update required"),
+          content: Text(
+              "update app version to ${jsonDecode(jsonEncode(snapshot.value))['AppVersion']}"),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                redirect();
+              },
+              child: const Text("Update"),
+            ),
+          ],
+        ),
+      );
+    } else {
+      if (packageInfo.version !=
+          jsonDecode(jsonEncode(snapshot.value))['AppVersion']) {
+        return showDialog(
           context: context,
           builder: (ctx) => AlertDialog(
-            title: Text(Errtitle),
-            content: Text(message),
+            title: Text("An app update available!"),
+            content: Text(
+                "latest versions :  ${jsonDecode(jsonEncode(snapshot.value))['AppVersion']}"),
             actions: <Widget>[
-              Container(
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.of(ctx).pop();
-                  },
-                  child: const Text("okay"),
-                ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(ctx).pop();
+                },
+                child: const Text("Close"),
+              ),
+              TextButton(
+                onPressed: () async {
+                  redirect();
+                },
+                child: const Text("Update"),
               ),
             ],
           ),
         );
       }
+    }
+  }
 
-      //if (usernameController.text == "" || passwordController.text == "") {
-      //message("error_message", "Empty field username/password");
-      //} else {
-      showDialog(
-          // The user CANNOT close this dialog  by pressing outsite it
-          barrierDismissible: false,
-          context: context,
-          builder: (_) {
-            return Dialog(
-              // The background color
-              backgroundColor: Colors.white,
-              child: Padding(
-                padding: const EdgeInsets.all(30),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    // The loading indicator
-                    CircularProgressIndicator(),
-                    SizedBox(
-                      height: 15,
-                    ),
-                    // Some text
-                    Text('Loading...')
-                  ],
-                ),
-              ),
-            );
-          });
-
-      // Your asynchronous computation here (fetching data from an API, processing files, inserting something to the database, etc)
-      await Future.delayed(const Duration(seconds: 3));
-
-      final idih = (await fungsi.login(
-          usernameController.text, passwordController.text, isChecked));
-
-      // Close the dialog programmatically
-      Navigator.of(context).pop();
-      // ignore: non_constant_identifier_names
-
-      final aduh = jsonDecode(idih);
-
-      if (aduh['auth'] == "success") {
-        final regions =
-            (await fungsi.country(aduh['Authorization'], aduh['id_token']));
-        Map<String, String> header = {
-          'ppuid': aduh['ppuid'],
-          'Authorization': aduh['Authorization'],
-          'Entitlements': aduh['X-Riot-Entitlements-JWT'],
-          'ClientVersion': aduh['X-Riot-ClientVersion'],
-          'ClientPlatform': aduh['X-Riot-ClientPlatform'],
-          'region': regions,
-          'expired': aduh['expired'],
-          'id_token': aduh['id_token']
-        };
-        Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => Main(
-                  header: header,
-                  username: usernameController.text,
-                )));
-      } else if (aduh['auth'] == "error") {
-        message("Error_message", "Username/Password incorrect");
-      } else if (aduh['auth'] == "error_connection") {
-        message("Error_message", "please turn your internet on");
+  @override
+  Widget build(BuildContext context) {
+    checkUpdate(context);
+    void _fetchData(BuildContext context) async {
+      if (usernameController.text == "" || passwordController.text == "") {
+        message("error_message", "Empty field username/password");
       } else {
-        message("Error_message", "Fetch Data error! try again in 5 sec");
+        showDialog(
+            // The user CANNOT close this dialog  by pressing outsite it
+            barrierDismissible: false,
+            context: context,
+            builder: (_) {
+              return Dialog(
+                // The background color
+                backgroundColor: Colors.white,
+                child: Padding(
+                  padding: const EdgeInsets.all(30),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      // The loading indicator
+                      CircularProgressIndicator(),
+                      SizedBox(
+                        height: 15,
+                      ),
+                      // Some text
+                      Text('Loading...')
+                    ],
+                  ),
+                ),
+              );
+            });
+
+        // Your asynchronous computation here (fetching data from an API, processing files, inserting something to the database, etc)
+        await Future.delayed(const Duration(seconds: 3));
+
+        final idih = (await fungsi.login(
+            usernameController.text, passwordController.text, isChecked));
+
+        Navigator.of(context).pop();
+
+        final aduh = jsonDecode(idih);
+
+        if (aduh['auth'] == "success") {
+          final regions =
+              (await fungsi.country(aduh['Authorization'], aduh['id_token']));
+          Map<String, String> header = {
+            'ppuid': aduh['ppuid'],
+            'Authorization': aduh['Authorization'],
+            'Entitlements': aduh['X-Riot-Entitlements-JWT'],
+            'ClientVersion': aduh['X-Riot-ClientVersion'],
+            'ClientPlatform': aduh['X-Riot-ClientPlatform'],
+            'region': regions,
+            'expired': aduh['expired'],
+            'id_token': aduh['id_token']
+          };
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => Main(
+                    header: header,
+                    username: usernameController.text,
+                  )));
+        } else if (aduh['auth'] == "error") {
+          message("Error_message", "Username/Password incorrect");
+        } else if (aduh['auth'] == "error_connection") {
+          message("Error_message", "please turn your internet on");
+        } else {
+          message("Error_message", "Fetch Data error! try again in 5 sec");
+        }
       }
-      //}
       // show the loading dialog
     }
 

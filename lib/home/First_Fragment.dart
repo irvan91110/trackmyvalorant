@@ -782,13 +782,11 @@ class Missions extends StatelessWidget {
                           ),
                           Padding(
                             padding: const EdgeInsets.only(left: 5.0),
-                            child: Expanded(
-                              child: Text(
-                                textAlign: TextAlign.center,
-                                title,
-                                style: const TextStyle(
-                                    fontSize: 16, color: Colors.white),
-                              ),
+                            child: Text(
+                              textAlign: TextAlign.center,
+                              title,
+                              style: const TextStyle(
+                                  fontSize: 16, color: Colors.white),
                             ),
                           ),
                           Expanded(

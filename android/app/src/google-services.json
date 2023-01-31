@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "1091996501976",
+    "firebase_url": "https://trackmyvalorant-ecd1f-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "trackmyvalorant-ecd1f",
+    "storage_bucket": "trackmyvalorant-ecd1f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1091996501976:android:fb35ff267dadb34cd8d4ad",
+        "android_client_info": {
+          "package_name": "com.iirvanard.app.trackmyvalorant"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1091996501976-ntq5f6518p290tu50kdbavic19uri025.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAtlsSxeNEKlXdz2p0ofG_zuoFE_J6H3Co"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1091996501976-ntq5f6518p290tu50kdbavic19uri025.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

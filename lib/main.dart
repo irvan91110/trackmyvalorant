@@ -1,13 +1,21 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:trackmyvalorant/login/login.dart';
 import 'package:flutter/services.dart';
 
+// Import the firebase_core plugin
+import 'package:firebase_core/firebase_core.dart';
+
 void main() async {
+  //Apps update
   WidgetsFlutterBinding.ensureInitialized();
+
   SystemChrome.setPreferredOrientations(
     [DeviceOrientation.portraitUp],
   );
-  //final idih = (await fungsi.login("irvan9110", "Imnot404@", true));
+  await Firebase.initializeApp();
 
   runApp(const MyApp());
 }

@@ -6,6 +6,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 // import 'package:trackmyvalorant/fungsiku.dart' as fungsi;
 import 'package:trackmyvalorant/home/First_Fragment.dart';
 import 'package:trackmyvalorant/home/Second_fragment.dart';
+import 'package:trackmyvalorant/home/fourth_fragment.dart';
+
+import 'package:trackmyvalorant/home/third_fragment.dart';
 
 class Main extends StatefulWidget {
   final Map<String, String> header;
@@ -34,11 +37,11 @@ class _MainState extends State<Main> {
           header: widget.header,
         );
       } else if (_selectedIndex == 1) {
-        return shimmer();
+        return second();
       } else if (_selectedIndex == 2) {
-        return Text("3");
+        return third();
       } else if (_selectedIndex == 3) {
-        return Text("4");
+        return fourth();
       }
     }
 

@@ -6,6 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:trackmyvalorant/login/login.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../network/fungsiku.dart' as fungsi;
+import 'package:trackmyvalorant/home/main_fragment.dart';
 
 class MultipleLogin extends StatefulWidget {
   const MultipleLogin({Key? key}) : super(key: key);
@@ -75,6 +77,95 @@ class _multiple_login extends State<MultipleLogin> {
           ),
         ) ??
         false; //if showDialouge had returned null, then return false
+  }
+
+  void _fetchData(
+      BuildContext context, String username, String password) async {
+    void message(String Errtitle, String message) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(Errtitle),
+          content: Text(message),
+          actions: <Widget>[
+            Container(
+              child: TextButton(
+                onPressed: () {
+                  Navigator.of(ctx).pop();
+                },
+                child: const Text("okay"),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (username == "" || password == "") {
+      message("error_message", "Empty field username/password");
+    } else {
+      showDialog(
+          // The user CANNOT close this dialog  by pressing outsite it
+          barrierDismissible: false,
+          context: context,
+          builder: (_) {
+            return Dialog(
+              // The background color
+              backgroundColor: Colors.white,
+              child: Padding(
+                padding: const EdgeInsets.all(30),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    // The loading indicator
+                    CircularProgressIndicator(),
+                    SizedBox(
+                      height: 15,
+                    ),
+                    // Some text
+                    Text('Loading...')
+                  ],
+                ),
+              ),
+            );
+          });
+
+      // Your asynchronous computation here (fetching data from an API, processing files, inserting something to the database, etc)
+      await Future.delayed(const Duration(seconds: 3));
+
+      final idih = (await fungsi.login(username, password, false));
+
+      Navigator.of(context).pop();
+
+      final aduh = jsonDecode(idih);
+
+      if (aduh['auth'] == "success") {
+        final regions =
+            (await fungsi.country(aduh['Authorization'], aduh['id_token']));
+        Map<String, String> header = {
+          'ppuid': aduh['ppuid'],
+          'Authorization': aduh['Authorization'],
+          'Entitlements': aduh['X-Riot-Entitlements-JWT'],
+          'ClientVersion': aduh['X-Riot-ClientVersion'],
+          'ClientPlatform': aduh['X-Riot-ClientPlatform'],
+          'region': regions,
+          'expired': aduh['expired'],
+          'id_token': aduh['id_token']
+        };
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => Main(
+                  header: header,
+                  username: username,
+                )));
+      } else if (aduh['auth'] == "error") {
+        message("Error_message", "Username/Password incorrect");
+      } else if (aduh['auth'] == "error_connection") {
+        message("Error_message", "please turn your internet on");
+      } else {
+        message("Error_message", "Fetch Data error! try again in 5 sec");
+      }
+    }
+    // show the loading dialog
   }
 
   @override
@@ -162,7 +253,10 @@ class _multiple_login extends State<MultipleLogin> {
                                           children: <Widget>[
                                             InkWell(
                                               onTap: () {
-                                                print("click");
+                                                _fetchData(
+                                                    context,
+                                                    accountlist[i]['username'],
+                                                    accountlist[i]['password']);
                                               }, // Image tapped
                                               child: Row(
                                                   mainAxisAlignment:
